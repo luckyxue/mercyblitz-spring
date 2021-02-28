@@ -25,7 +25,8 @@ public class CircuitBreakerAspect {
         Object retVal;
         try {
             if (counter.containsKey(signature)) {
-                if (counter.get(signature).get() > THRESHOLD &&
+                // counter累加次数超过阈值 并且 breakCounter 次数小于阈值时触发逻辑
+                if (counter.get(signature).get() >= THRESHOLD &&
                         breakCounter.get(signature).get() < THRESHOLD) {
                     log.warn("Circuit breaker return null, break {} times.",
                             breakCounter.get(signature).incrementAndGet());
@@ -39,8 +40,10 @@ public class CircuitBreakerAspect {
             counter.get(signature).set(0);
             breakCounter.get(signature).set(0);
         } catch (Throwable t) {
+            // counter次数继续累加
             log.warn("Circuit breaker counter: {}, Throwable {}",
                     counter.get(signature).incrementAndGet(), t.getMessage());
+            // breakCounter清零
             breakCounter.get(signature).set(0);
             throw t;
         }
